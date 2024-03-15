@@ -6,28 +6,32 @@ import java.util.List;
 public class Quiz {
 
     private Integer id;
+    private String title;
     private List<Integer> questionIds;
 
     private List<Question> questions;
 
-    public Quiz(Integer id, List<Integer> questionIds) {
+    public Quiz(Integer id, String quizTitle, List<Integer> questionIds) {
         this.id = id;
+        this.title = quizTitle;
         this.questionIds = questionIds;
     }
 
     public String toLine(int quizId) {
         String questionIds = String.join(",", getQuestionIds().stream().map(String::valueOf).toList());
-        String line = String.format("%1s,%2s",
+        String line = String.format("%1s,%2s, %3s",
                 quizId,
+                getTitle(),
                               questionIds);
         return line;
     }
 
     public static Quiz fromLine(String line) {
         String[] tokens = line.split(",");
-        List<Integer> ids = Arrays.stream(Arrays.copyOfRange(tokens, 1, tokens.length))
-                .map(Integer::valueOf).toList();
+        List<Integer> ids = Arrays.stream(Arrays.copyOfRange(tokens, 2, tokens.length))
+                .map(x -> Integer.valueOf(x.trim())).toList();
         Quiz q = new Quiz(Integer.valueOf(tokens[0]),
+                tokens[1],
                 ids);
         return q;
     }
@@ -38,6 +42,14 @@ public class Quiz {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public List<Integer> getQuestionIds() {

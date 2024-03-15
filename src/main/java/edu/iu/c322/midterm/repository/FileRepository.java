@@ -69,6 +69,26 @@ public class FileRepository {
         return id;
     }
 
+    public int update(int id, Quiz quiz) throws IOException {
+        Path path = Paths.get(QUIZ_DATABASE_NAME);
+        List<Quiz> quizzes = findAllQuizzes();
+        List<String> quizzesAsText = new ArrayList<>();
+        for(Quiz q : quizzes) {
+            if(q.getId() == id) {
+                if(quiz.getQuestionIds() != null) {
+                    q.setQuestionIds(quiz.getQuestionIds());
+                }
+                if(quiz.getTitle() != null) {
+                    q.setTitle(quiz.getTitle());
+                }
+            }
+            String line = q.toLine(q.getId());
+            quizzesAsText.add(line);
+        }
+        Files.write(path, quizzesAsText, StandardCharsets.UTF_8);
+        return id;
+    }
+
     public List<Question> findAllQuestions() throws IOException {
         List<Question> result = new ArrayList<>();
         Path path = Paths.get(QUESTION_DATABASE_NAME);
@@ -114,12 +134,11 @@ public class FileRepository {
     }
 
     public List<Question> find(List<Integer> ids) throws IOException {
-        List<Question> animals = findAllQuestions();
+        List<Question> questions = findAllQuestions();
         List<Question> result = new ArrayList<>();
-        for (Question question : animals) {
-            if (ids.stream().anyMatch(x -> x == question.getId())) {
-                result.add(question);
-            }
+        for (int id : ids) {
+            Question q = questions.stream().filter(x -> x.getId() == id).toList().get(0);
+            result.add(q);
         }
         return result;
     }

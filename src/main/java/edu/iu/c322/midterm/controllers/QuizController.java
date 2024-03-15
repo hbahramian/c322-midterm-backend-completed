@@ -28,6 +28,15 @@ public class QuizController {
         }
     }
 
+    @PutMapping("/{id}")
+    public int update(@PathVariable int id, @RequestBody Quiz quiz) {
+        try {
+            return fileRepository.update(id, quiz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @GetMapping("/{id}")
     public Quiz get(@PathVariable int id) {
         try {
