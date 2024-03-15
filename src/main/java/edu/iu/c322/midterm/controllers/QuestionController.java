@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/questions")
 public class QuestionController {
 
@@ -33,7 +34,7 @@ public class QuestionController {
     @GetMapping
     public List<Question> findAll() {
         try {
-            return fileRepository.findAll();
+            return fileRepository.findAllQuestions();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

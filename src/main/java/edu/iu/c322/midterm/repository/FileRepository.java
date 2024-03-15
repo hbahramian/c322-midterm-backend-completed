@@ -1,6 +1,7 @@
 package edu.iu.c322.midterm.repository;
 
 import edu.iu.c322.midterm.model.Question;
+import edu.iu.c322.midterm.model.Quiz;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -19,6 +21,7 @@ public class FileRepository {
     private String IMAGES_FOLDER_PATH = "quizzes/questions/images";
     private static final String NEW_LINE = System.lineSeparator();
     private static final String QUESTION_DATABASE_NAME = "quizzes/questions.txt";
+    private static final String QUIZ_DATABASE_NAME = "quizzes/quizzes.txt";
 
     public FileRepository() {
         File imagesDirectory = new File(IMAGES_FOLDER_PATH);
@@ -37,7 +40,7 @@ public class FileRepository {
 
     public int add(Question question) throws IOException {
         Path path = Paths.get(QUESTION_DATABASE_NAME);
-        List<Question> questions = findAll();
+        List<Question> questions = findAllQuestions();
         int id = 0;
         for(Question q : questions) {
             if(q.getId() > id) {
@@ -51,21 +54,55 @@ public class FileRepository {
         return id;
     }
 
-    public List<Question> findAll() throws IOException {
+    public int add(Quiz quiz) throws IOException {
+        Path path = Paths.get(QUIZ_DATABASE_NAME);
+        List<Quiz> quizzes = findAllQuizzes();
+        int id = 0;
+        for(Quiz q : quizzes) {
+            if(q.getId() > id) {
+                id = q.getId();
+            }
+        }
+        id = id + 1;
+        String data = quiz.toLine(id);
+        appendToFile(path, data + NEW_LINE);
+        return id;
+    }
+
+    public List<Question> findAllQuestions() throws IOException {
         List<Question> result = new ArrayList<>();
         Path path = Paths.get(QUESTION_DATABASE_NAME);
         if (Files.exists(path)) {
             List<String> data = Files.readAllLines(path);
             for (String line : data) {
-                Question q = Question.fromLine(line);
-                result.add(q);
+                if(line.trim().length() != 0) {
+                    Question q = Question.fromLine(line);
+                    result.add(q);
+                }
             }
         }
         return result;
     }
 
+    public List<Quiz> findAllQuizzes() throws IOException {
+        List<Quiz> result = new ArrayList<>();
+        Path path = Paths.get(QUIZ_DATABASE_NAME);
+        if (Files.exists(path)) {
+            List<String> data = Files.readAllLines(path);
+            for (String line : data) {
+                if(line.trim().length() != 0) {
+                    Quiz q = Quiz.fromLine(line);
+                    result.add(q);
+                }
+            }
+        }
+        return result;
+    }
+
+
+
     public List<Question> find(String answer) throws IOException {
-        List<Question> animals = findAll();
+        List<Question> animals = findAllQuestions();
         List<Question> result = new ArrayList<>();
         for (Question question : animals) {
             if (answer != null && !question.getAnswer().trim().equalsIgnoreCase(answer.trim())) {
@@ -76,9 +113,22 @@ public class FileRepository {
         return result;
     }
 
-    public Question get(Integer id) throws IOException {
-        List<Question> animals = findAll();
+    public List<Question> find(List<Integer> ids) throws IOException {
+        List<Question> animals = findAllQuestions();
+        List<Question> result = new ArrayList<>();
         for (Question question : animals) {
+            if (ids.stream().anyMatch(x -> x == question.getId())) {
+                result.add(question);
+            }
+        }
+        return result;
+    }
+
+
+
+    public Question get(Integer id) throws IOException {
+        List<Question> questions = findAllQuestions();
+        for (Question question : questions) {
             if (question.getId() == id) {
                 return question;
             }
@@ -106,4 +156,15 @@ public class FileRepository {
         return image;
     }
 
+    public Quiz getTheQuiz(int id) throws IOException {
+        List<Quiz> quizzes = findAllQuizzes();
+        for (Quiz q : quizzes) {
+            if (q.getId() == id) {
+                List<Question> questions = find(q.getQuestionIds());
+                q.setQuestions(questions);
+                return q;
+            }
+        }
+        return null;
+    }
 }
