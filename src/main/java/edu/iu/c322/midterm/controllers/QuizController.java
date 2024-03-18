@@ -6,6 +6,7 @@ import edu.iu.c322.midterm.repository.FileRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -23,6 +24,15 @@ public class QuizController {
     public int add(@RequestBody Quiz quiz) {
         try {
             return fileRepository.add(quiz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping
+    public List<Quiz> findAll() {
+        try {
+            return fileRepository.findAllQuizzes();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
